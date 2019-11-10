@@ -50,10 +50,15 @@ impl DGItem for Plug {
 mod tests {
     use super::*;
     use crate::attribute::Attribute;
-    use crate::node::Node;
+    use crate::node::{Node, NodeType};
+    struct NullNode {}
+    impl NodeType for NullNode {
+        fn evaluate<T: NodeType>(&self, node: &Node<T>){}
+    }
+
     #[test]
     fn test_plug_path() {
-        let node = Node::new(String::from("node"), None);
+        let node = Node::new(String::from("node"), None, NullNode{});
         let attribute = Attribute::new(String::from("attribute"), node.path(), false);
         let plug = Plug::new(String::from("plug"), node.path(), attribute.path());
         assert_eq!(plug.path(), "|node<plug");
@@ -61,11 +66,11 @@ mod tests {
 
     #[test]
     fn test_connect_plug() {
-        let node1 = Node::new(String::from("node1"), None);
+        let node1 = Node::new(String::from("node1"), None, NullNode{});
         let attribute1 = Attribute::new(String::from("attribute1"), node1.path(), false);
         let mut plug = Plug::new(String::from("plug"), node1.path(), attribute1.path());
 
-        let node2 = Node::new(String::from("node2"), None);
+        let node2 = Node::new(String::from("node2"), None, NullNode{});
         let attribute2 = Attribute::new(String::from("attribute2"), node2.path(), false);
         let mut socket = Socket::new(String::from("socket"), node2.path(), attribute2.path());
 
@@ -75,11 +80,11 @@ mod tests {
 
     #[test]
     fn test_connect_plug_already_connected() {
-        let node1 = Node::new(String::from("node1"), None);
+        let node1 = Node::new(String::from("node1"), None, NullNode{});
         let attribute1 = Attribute::new(String::from("attribute1"), node1.path(), false);
         let mut plug = Plug::new(String::from("plug"), node1.path(), attribute1.path());
 
-        let node2 = Node::new(String::from("node2"), None);
+        let node2 = Node::new(String::from("node2"), None, NullNode{});
         let attribute2 = Attribute::new(String::from("attribute2"), node2.path(), false);
         let mut socket = Socket::new(String::from("socket"), node2.path(), attribute2.path());
 
@@ -91,7 +96,7 @@ mod tests {
 
     #[test]
     fn test_connect_plug_same_node() {
-        let node = Node::new(String::from("node"), None);
+        let node = Node::new(String::from("node"), None, NullNode{});
         let attribute = Attribute::new(String::from("attribute"), node.path(), false);
         let mut plug = Plug::new(String::from("plug"), node.path(), attribute.path());
         let mut socket = Socket::new(String::from("socket"), node.path(), attribute.path());

@@ -39,12 +39,18 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::node::Node;
+
+    use crate::node::{Node, NodeType};
+    struct NullNode {}
+    impl NodeType for NullNode {
+        fn evaluate<T: NodeType>(&self, node: &Node<T>){}
+    }
+
 
     #[test]
     fn test_add_node() {
         let mut scene = Scene::new();
-        let node = Node::new(String::from("tamere"), None);
+        let node = Node::new(String::from("tamere"), None, NullNode{});
         let res = scene.add_item(node);
         assert!(res.is_ok());
     }
@@ -52,10 +58,10 @@ mod tests {
     fn test_add_duplicate_node() {
         let mut scene = Scene::new();
 
-        let node = Node::new(String::from("tamere"), None);
+        let node = Node::new(String::from("tamere"), None, NullNode{});
         scene.add_item(node).unwrap();
 
-        let node = Node::new(String::from("tamere"), None);
+        let node = Node::new(String::from("tamere"), None, NullNode{});
         let res = scene.add_item(node);
         assert_eq!(res, Err(SceneError::ItemAlreadyExists));
     }
