@@ -1,47 +1,46 @@
 use crate::dg::{DGITemType, DGItem, DGPath};
 use crate::errors::ConnectionError;
-use crate::socket::Socket;
+use crate::plug::Plug;
 
-pub struct Plug {
+pub struct Socket {
     pub name: String,
     pub node: DGPath,
     pub attribute: DGPath,
-    pub sockets: Vec<DGPath>,
+    pub plug: Option<DGPath>,
 }
 
-impl Plug {
+impl Socket {
     pub fn new(name: String, node: DGPath, attribute: DGPath) -> Self {
-        Plug {
+        Socket {
             name: name,
             node: node,
             attribute: attribute,
-            sockets: vec![],
+            plug: None,
         }
     }
 }
 
-impl Plug {
-    pub fn connect(&mut self, other: &mut Socket) -> Result<(), ConnectionError> {
+impl Socket {
+    pub fn connect(&mut self, other: &mut Plug) -> Result<(), ConnectionError> {
         if self.node == other.node {
             return Err(ConnectionError::SameNode)
         }
-        for socket in &self.sockets {
-            if *socket == other.path() {
-                return Err(ConnectionError::AlreadyConnected)
-            }
+        if self.plug == Some(other.path()) {
+            return Err(ConnectionError::AlreadyConnected)
         }
-        self.sockets.push(other.path());
-        other.plug = Some(self.path());
+
+        self.plug = Some(other.path());
+        other.sockets.push(self.path());
         Ok(())
     }
 }
 
-impl DGItem for Plug {
+impl DGItem for Socket {
     fn path(&self) -> DGPath {
-        let path = format!("{}<{}", &self.node.path, &self.name);
+        let path = format!("{}>{}", &self.node.path, &self.name);
         DGPath {
             path: path,
-            item_type: DGITemType::Plug,
+            item_type: DGITemType::Socket,
         }
     }
 }
@@ -52,15 +51,14 @@ mod tests {
     use crate::attribute::Attribute;
     use crate::node::Node;
     #[test]
-    fn test_plug_path() {
+    fn test_socket_path() {
         let node = Node::new(String::from("node"), None);
         let attribute = Attribute::new(String::from("attribute"), node.path());
-        let plug = Plug::new(String::from("plug"), node.path(), attribute.path());
-        assert_eq!(plug.path(), "|node<plug");
+        let socket = Socket::new(String::from("socket"), node.path(), attribute.path());
+        assert_eq!(socket.path(), "|node>socket");
     }
-
     #[test]
-    fn test_connect_plug() {
+    fn test_connect_socket() {
         let node1 = Node::new(String::from("node1"), None);
         let attribute1 = Attribute::new(String::from("attribute1"), node1.path());
         let mut plug = Plug::new(String::from("plug"), node1.path(), attribute1.path());
@@ -69,7 +67,7 @@ mod tests {
         let attribute2 = Attribute::new(String::from("attribute2"), node2.path());
         let mut socket = Socket::new(String::from("socket"), node2.path(), attribute2.path());
 
-        let res = plug.connect(&mut socket);
+        let res = socket.connect(&mut plug);
         assert!(res.is_ok());
     }
 
@@ -83,9 +81,9 @@ mod tests {
         let attribute2 = Attribute::new(String::from("attribute2"), node2.path());
         let mut socket = Socket::new(String::from("socket"), node2.path(), attribute2.path());
 
-        plug.connect(&mut socket).unwrap();
+        socket.connect(&mut plug).unwrap();
 
-        let res = plug.connect(&mut socket);
+        let res = socket.connect(&mut plug);
         assert_eq!(res, Err(ConnectionError::AlreadyConnected));
     }
 
@@ -96,7 +94,7 @@ mod tests {
         let mut plug = Plug::new(String::from("plug"), node.path(), attribute.path());
         let mut socket = Socket::new(String::from("socket"), node.path(), attribute.path());
 
-        let res = plug.connect(&mut socket);
+        let res = socket.connect(&mut plug);
         assert_eq!(res, Err(ConnectionError::SameNode));
     }
 }

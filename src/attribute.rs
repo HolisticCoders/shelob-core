@@ -1,65 +1,37 @@
-pub trait AttributeType {}
+use crate::dg::{DGITemType, DGItem, DGPath};
 
-pub struct Attribute<T>
-where
-    T: AttributeType,
-{
+pub struct Attribute {
     pub name: String,
-    value: T,
+    pub node: DGPath,
 }
 
-// related functions
-impl<T> Attribute<T>
-where
-    T: AttributeType,
-{
-    #[allow(dead_code)]
-    pub fn new(name: String, value: T) -> Self {
+impl Attribute {
+    pub fn new(name: String, node: DGPath) -> Self {
         Attribute {
             name: name,
-            value: value,
+            node: node,
         }
     }
 }
 
-// methods
-impl<T> Attribute<T>
-where
-    T: AttributeType,
-{
-    #[allow(dead_code)]
-    pub fn get(&self) -> &T {
-        &self.value
-    }
-
-    #[allow(dead_code)]
-    pub fn set(&mut self, value: T) {
-        self.value = value
+impl DGItem for Attribute {
+    fn path(&self) -> DGPath {
+        let path = format!("{}.{}", &self.node.path, &self.name);
+        DGPath {
+            path: path,
+            item_type: DGITemType::Attribute,
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    impl AttributeType for bool {}
-
+    use crate::node::Node;
     #[test]
-    fn create_attribute() {
-        Attribute::new("attribute".to_string(), true);
-    }
-
-    #[test]
-    fn set_attribute() {
-        let mut attribute = Attribute::new("attribute".to_string(), true);
-        attribute.set(false);
-        assert_eq!(attribute.value, false);
-    }
-
-    #[test]
-    fn get_attribute() {
-        let mut attribute = Attribute::new("attribute".to_string(), true);
-        attribute.set(false);
-        assert_eq!(attribute.get(), &false);
+    fn test_attribute_path() {
+        let node = Node::new(String::from("node"), None);
+        let attribute = Attribute::new(String::from("attribute"), node.path());
+        assert_eq!(attribute.path(), "|node.attribute");
     }
 }

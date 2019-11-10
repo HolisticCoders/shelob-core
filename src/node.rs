@@ -1,39 +1,39 @@
-use crate::attribute::{Attribute, AttributeType};
-use crate::plug::Plug;
+use crate::dg::{DGITemType, DGItem, DGPath};
 
-struct Node<'a, T>
-where
-    T: AttributeType,
-{
-    name: String,
-    plugs: Vec<Plug<'a, T>>,       // should be a hash-map with uuids
-    attributes: Vec<Attribute<T>>, // should be a hash-map with uuids
+pub struct Node {
+    pub name: String,
+    pub parent: Option<DGPath>,
 }
 
-// related functions
-impl<T> Node<'_, T>
-where
-    T: AttributeType,
-{
-    #[allow(dead_code)]
-    pub fn new(name: String) -> Self {
+impl Node {
+    pub fn new(name: String, parent: Option<DGPath>) -> Self {
         Node {
             name: name,
-            plugs: vec![],
-            attributes: vec![],
+            parent: parent,
         }
     }
 }
 
-// methods
-impl<T> Node<'_, T>
-where
-    T: AttributeType,
-{
-    #[allow(dead_code)]
-    pub fn add_attribute(&mut self, name: String, value: T) -> &Attribute<T> {
-        let attribute = Attribute::new(name, value);
-        self.attributes.push(attribute);
-        self.attributes.last().unwrap()
+impl DGItem for Node {
+    fn path(&self) -> DGPath {
+        let path = match &self.parent {
+            None => format!("|{}", self.name.clone()),
+            Some(parent) => format!("{}|{}", parent.path, &self.name),
+        };
+        DGPath {
+            path: path,
+            item_type: DGITemType::Node
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_parent() {
+        let parent = Node::new(String::from("parent"), None);
+        let child = Node::new(String::from("child"), Some(parent.path()));
+        assert_eq!(child.path(), "|parent|child");
     }
 }
