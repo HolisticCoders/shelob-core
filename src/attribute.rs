@@ -1,20 +1,33 @@
 use crate::dg::{DGITemType, DGItem, DGPath};
 
-pub struct Attribute {
+pub trait AttributeType {}
+
+pub struct Attribute<T>
+where
+    T: AttributeType,
+{
     pub name: String,
     pub node: DGPath,
+    pub value: T,
 }
 
-impl Attribute {
-    pub fn new(name: String, node: DGPath) -> Self {
+impl<T> Attribute<T>
+where
+    T: AttributeType,
+{
+    pub fn new(name: String, node: DGPath, value: T) -> Self {
         Attribute {
             name: name,
             node: node,
+            value: value,
         }
     }
 }
 
-impl DGItem for Attribute {
+impl<T> DGItem for Attribute<T>
+where
+    T: AttributeType,
+{
     fn path(&self) -> DGPath {
         let path = format!("{}.{}", &self.node.path, &self.name);
         DGPath {
@@ -28,10 +41,11 @@ impl DGItem for Attribute {
 mod tests {
     use super::*;
     use crate::node::Node;
+    impl AttributeType for bool {}
     #[test]
     fn test_attribute_path() {
         let node = Node::new(String::from("node"), None);
-        let attribute = Attribute::new(String::from("attribute"), node.path());
+        let attribute = Attribute::new(String::from("attribute"), node.path(), false);
         assert_eq!(attribute.path(), "|node.attribute");
     }
 }
