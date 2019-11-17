@@ -7,5 +7,7 @@ pub enum SceneError {
 pub enum ConnectionError {
     AlreadyConnected,
     SameNode,
+    SourceIsInputOnly,
+    TargetIsOutputOnly,
 }
 
