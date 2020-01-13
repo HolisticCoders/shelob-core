@@ -3,3 +3,8 @@ name = "shelob-core"
 version = "0.1.0"
 authors = ["Loïc Pinsard", "Alexy Long"]
 edition = "2018"
+
+[dependencies]
+petgraph = "0.5.0"
+uuid = { version = "0.8", features = ["v4"] }
+
