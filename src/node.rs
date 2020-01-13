@@ -1,14 +1,8 @@
-use uuid::Uuid;
+use crate::attribute::Attribute;
 
-#[derive(Debug)]
-pub struct Node {
-    pub uuid: Uuid,
-}
 
-impl Node {
-    pub fn new() -> Self {
-        Node {
-            uuid: Uuid::new_v4()
-        }
-    }
+pub trait Node {
+    fn new() -> Self;
+    fn evaluate(&self);
+    fn attributes(&self) -> Vec<&Attribute>;
 }
