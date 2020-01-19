@@ -3,10 +3,9 @@ use std::collections::HashMap;
 use petgraph::Graph;
 use uuid::Uuid;
 
-use crate::node::Node;
 use crate::attribute::Attribute;
 
-pub struct Scene<T> where T: Node {
+pub struct Scene<T> {
     pub nodes: HashMap<Uuid, T>,
     pub attributes: HashMap<Uuid, Attribute>,
 
@@ -14,7 +13,7 @@ pub struct Scene<T> where T: Node {
     pub attribute_graph: Graph<Uuid, Uuid>,
 }
 
-impl<T> Scene<T> where T: Node {
+impl<T> Scene<T> {
     pub fn new() -> Self {
         Scene {
             nodes: HashMap::new(),
